@@ -410,9 +410,43 @@ app.get('/get_products/:type', (req, res)=>{
     })
 })
 
-app.post('/add_product', upload.single('image'), verifyToken, (req, res)=>{
-    let image = req.file.filename;
-    let productName  = req.body.productName;
+// app.post('/add_product', upload.single('image'), verifyToken, (req, res)=>{
+//     let image = req.file.filename;
+//     let productName  = req.body.productName;
+//     let description = req.body.description;
+//     let ownedBy = req.userId;
+//     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+//     let price = req.body.price;
+//     let size = req.body.size;
+
+//     let data = {
+//         image, type, productName, price, description, ownedBy, size, availability : true
+//     }
+
+//     UsersModel.findOne({ _id: ownedBy})
+//     .then(user => {
+//         let approvalStatus = 1;
+
+//         // if(user.accountType == 'admin'){
+//         //     approvalStatus = 1;
+//         // }
+
+//         ProductsModel({...data, approvalStatus: approvalStatus}).save()
+//         .then(()=>{
+//             res.status(200).json('success');
+//         })
+//         .catch(err => {
+//             res.status(400).json('failed');
+//         })
+//     })
+//     .catch(err => {
+//         res.status(500).json("Internal Server Error");
+//     });    
+// })
+
+app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
+    let images = req.files ? req.files.map(file => file.filename) : []; // Get all uploaded image filenames
+    let productName = req.body.productName;
     let description = req.body.description;
     let ownedBy = req.userId;
     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
@@ -420,66 +454,103 @@ app.post('/add_product', upload.single('image'), verifyToken, (req, res)=>{
     let size = req.body.size;
 
     let data = {
-        image, type, productName, price, description, ownedBy, size, availability : true
-    }
+        image: images, // Save as an array of image filenames
+        type,
+        productName,
+        price,
+        description,
+        ownedBy,
+        size,
+        availability: true
+    };
 
-    UsersModel.findOne({ _id: ownedBy})
-    .then(user => {
-        let approvalStatus = 0;
+    UsersModel.findOne({ _id: ownedBy })
+        .then(user => {
+            let approvalStatus = 1;
 
-        if(user.accountType == 'admin'){
-            approvalStatus = 1;
-        }
-
-        ProductsModel({...data, approvalStatus: approvalStatus}).save()
-        .then(()=>{
-            res.status(200).json('success');
+            ProductsModel({ ...data, approvalStatus: approvalStatus })
+                .save()
+                .then(() => {
+                    res.status(200).json('success');
+                })
+                .catch(err => {
+                    res.status(400).json('failed');
+                });
         })
         .catch(err => {
-            res.status(400).json('failed');
-        })
-    })
-    .catch(err => {
-        res.status(500).json("Internal Server Error");
-    });    
-})
+            res.status(500).json("Internal Server Error");
+        });
+});
 
-app.put('/edit_product/:id', upload.single('image'), verifyToken, (req, res)=>{
-    let id = req.params.id;
-    let productName  = req.body.productName;
-    let description = req.body.description;
-    let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
-    let price = req.body.price;
-    let size = req.body.size;
 
-    if(req.body.image){ // Image is retained
-        let data = {
-            type, productName, price, description, size, approvalStatus : 0
-        }
+// app.put('/edit_product/:id', upload.single('image'), verifyToken, (req, res)=>{
+//     let id = req.params.id;
+//     let productName  = req.body.productName;
+//     let description = req.body.description;
+//     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+//     let price = req.body.price;
+//     let size = req.body.size;
 
-        ProductsModel.findByIdAndUpdate(id, data, {new: true})
-        .then((response)=>{
-            res.status(200).json('success');
-        })
-        .catch(err => {
-            res.status(500).json('success');
-        })
+//     if(req.body.image){ // Image is retained
+//         let data = {
+//             type, productName, price, description, size, approvalStatus : 0
+//         }
 
-    }else{
-        let image = req.file.filename;
-        let data = {
-            image, type, productName, price, description, size, approvalStatus : 0
-        }
+//         ProductsModel.findByIdAndUpdate(id, data, {new: true})
+//         .then((response)=>{
+//             res.status(200).json('success');
+//         })
+//         .catch(err => {
+//             res.status(500).json('success');
+//         })
 
-        ProductsModel.findByIdAndUpdate(id, data, {new: true})
-        .then((response)=>{
-            res.status(200).json('success');
-        })
-        .catch(err => {
-            res.status(500).json('success');
-        })
-    }
-})
+//     }else{
+//         let image = req.file.filename;
+//         let data = {
+//             image, type, productName, price, description, size, approvalStatus : 0
+//         }
+
+//         ProductsModel.findByIdAndUpdate(id, data, {new: true})
+//         .then((response)=>{
+//             res.status(200).json('success');
+//         })
+//         .catch(err => {
+//             res.status(500).json('success');
+//         })
+//     }
+// })
+
+app.put('/edit_product/:id', upload.array('images'), verifyToken, (req, res) => {
+  const id = req.params.id;
+  const productName = req.body.productName;
+  const description = req.body.description;
+  const type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+  const price = req.body.price;
+  const size = req.body.size;
+
+  let data = {
+      type,
+      productName,
+      price,
+      description,
+      size,
+      approvalStatus: 0
+  };
+
+  // If there are images, add them to the data
+  if (req.files && req.files.length > 0) {
+      data.image = req.files.map(file => file.filename);
+  }
+
+  ProductsModel.findByIdAndUpdate(id, data, { new: true })
+      .then((response) => {
+          res.status(200).json('success');
+      })
+      .catch(err => {
+          console.error(err);
+          res.status(500).json('failed');e
+      });
+});
 
 app.delete('/del_product/:id', urlEncoded, verifyToken, (req, res)=>{
     ProductsModel.findByIdAndRemove(req.params.id)
