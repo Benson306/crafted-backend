@@ -410,40 +410,6 @@ app.get('/get_products/:type', (req, res)=>{
     })
 })
 
-// app.post('/add_product', upload.single('image'), verifyToken, (req, res)=>{
-//     let image = req.file.filename;
-//     let productName  = req.body.productName;
-//     let description = req.body.description;
-//     let ownedBy = req.userId;
-//     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
-//     let price = req.body.price;
-//     let size = req.body.size;
-
-//     let data = {
-//         image, type, productName, price, description, ownedBy, size, availability : true
-//     }
-
-//     UsersModel.findOne({ _id: ownedBy})
-//     .then(user => {
-//         let approvalStatus = 1;
-
-//         // if(user.accountType == 'admin'){
-//         //     approvalStatus = 1;
-//         // }
-
-//         ProductsModel({...data, approvalStatus: approvalStatus}).save()
-//         .then(()=>{
-//             res.status(200).json('success');
-//         })
-//         .catch(err => {
-//             res.status(400).json('failed');
-//         })
-//     })
-//     .catch(err => {
-//         res.status(500).json("Internal Server Error");
-//     });    
-// })
-
 app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
     let images = req.files ? req.files.map(file => file.filename) : []; // Get all uploaded image filenames
     let productName = req.body.productName;
