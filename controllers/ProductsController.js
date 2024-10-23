@@ -454,7 +454,7 @@ app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
     let size = req.body.size;
 
     let data = {
-        image: images, // Save as an array of image filenames
+        image: images,
         type,
         productName,
         price,
@@ -482,45 +482,7 @@ app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
         });
 });
 
-
-// app.put('/edit_product/:id', upload.single('image'), verifyToken, (req, res)=>{
-//     let id = req.params.id;
-//     let productName  = req.body.productName;
-//     let description = req.body.description;
-//     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
-//     let price = req.body.price;
-//     let size = req.body.size;
-
-//     if(req.body.image){ // Image is retained
-//         let data = {
-//             type, productName, price, description, size, approvalStatus : 0
-//         }
-
-//         ProductsModel.findByIdAndUpdate(id, data, {new: true})
-//         .then((response)=>{
-//             res.status(200).json('success');
-//         })
-//         .catch(err => {
-//             res.status(500).json('success');
-//         })
-
-//     }else{
-//         let image = req.file.filename;
-//         let data = {
-//             image, type, productName, price, description, size, approvalStatus : 0
-//         }
-
-//         ProductsModel.findByIdAndUpdate(id, data, {new: true})
-//         .then((response)=>{
-//             res.status(200).json('success');
-//         })
-//         .catch(err => {
-//             res.status(500).json('success');
-//         })
-//     }
-// })
-
-app.put('/edit_product/:id', upload.array('images'), verifyToken, (req, res) => {
+app.put('/edit_product/:id', upload.array('images'), verifyToken, async (req, res) => {
   const id = req.params.id;
   const productName = req.body.productName;
   const description = req.body.description;
@@ -528,28 +490,46 @@ app.put('/edit_product/:id', upload.array('images'), verifyToken, (req, res) => 
   const price = req.body.price;
   const size = req.body.size;
 
-  let data = {
-      type,
-      productName,
-      price,
-      description,
-      size,
-      approvalStatus: 0
-  };
+  const incomingImages = req.body.images
 
-  // If there are images, add them to the data
-  if (req.files && req.files.length > 0) {
-      data.image = req.files.map(file => file.filename);
+  let images = [];
+
+  if (Array.isArray(incomingImages)) {
+    images = [...images, ...incomingImages]
+
+  } else if (typeof incomingImages === 'string') {
+    images.push(incomingImages)
   }
 
-  ProductsModel.findByIdAndUpdate(id, data, { new: true })
-      .then((response) => {
-          res.status(200).json('success');
-      })
-      .catch(err => {
-          console.error(err);
-          res.status(500).json('failed');e
-      });
+  let data = {
+    type,
+    productName,
+    price,
+    description,
+    size,
+    approvalStatus: 0
+  };
+
+  try {
+    const product = await ProductsModel.findById(id);
+    
+    if (!product) {
+      return res.status(404).json('Product not found');
+    }
+
+    if (req.files && req.files.length > 0) {
+      let filenames = req.files.map(file => file.filename);
+      data.image = [...images, ...filenames];
+    }else{
+      data.image = images;
+    }
+
+    const updatedProduct = await ProductsModel.findByIdAndUpdate(id, data, { new: true });
+    res.status(200).json('success');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json('failed');
+  }
 });
 
 app.delete('/del_product/:id', urlEncoded, verifyToken, (req, res)=>{
