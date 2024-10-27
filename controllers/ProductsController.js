@@ -344,7 +344,7 @@ app.get('/get_all_products', (req, res)=>{
 });
 
 app.get('/get_approved_products', (req, res)=>{
-    ProductsModel.find({ approvalStatus: 1})
+    ProductsModel.find({ approvalStatus: 0})
     .then((data)=>{
         res.status(200).json(data);
     })
