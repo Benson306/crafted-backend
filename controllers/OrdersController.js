@@ -133,12 +133,12 @@ app.post('/Checkout', urlEncoded, accessToken, verifyToken, function(req, res){
                             "id": data._id, //order id
                             "currency": "KES",
                             "amount":  received.min_price,
-                            "description": "Payment for Artworks",
+                            "description": "Payment for Furniture",
                             "callback_url": process.env.CLIENT_URL +  "/confirm",
                             "cancellation_url": process.env.CLIENT_URL + "/cancel", //Replace with frontend failed Page URL
                             "redirect_mode": "",
                             "notification_id": process.env.IPN_ID,
-                            "branch": "Ruple Art - Nairobi",
+                            "branch": "Utawala",
                             "billing_address": {
                                 "email_address": user.email,
                                 "phone_number": user.phoneNumber,
