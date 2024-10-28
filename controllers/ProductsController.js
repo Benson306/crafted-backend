@@ -432,7 +432,7 @@ app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
 
     UsersModel.findOne({ _id: ownedBy })
         .then(user => {
-            let approvalStatus = 1;
+            let approvalStatus = 0;
 
             ProductsModel({ ...data, approvalStatus: approvalStatus })
                 .save()
