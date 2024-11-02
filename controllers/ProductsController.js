@@ -416,6 +416,7 @@ app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
     let description = req.body.description;
     let ownedBy = req.userId;
     let type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+    let beforePrice = req.body.beforePrice;
     let price = req.body.price;
     let size = req.body.size;
 
@@ -423,6 +424,7 @@ app.post('/add_product', upload.array('images'), verifyToken, (req, res) => {
         image: images,
         type,
         productName,
+        beforePrice,
         price,
         description,
         ownedBy,
@@ -453,6 +455,7 @@ app.put('/edit_product/:id', upload.array('images'), verifyToken, async (req, re
   const productName = req.body.productName;
   const description = req.body.description;
   const type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+  let beforePrice = req.body.beforePrice;
   const price = req.body.price;
   const size = req.body.size;
 
@@ -470,6 +473,7 @@ app.put('/edit_product/:id', upload.array('images'), verifyToken, async (req, re
   let data = {
     type,
     productName,
+    beforePrice,
     price,
     description,
     size,
