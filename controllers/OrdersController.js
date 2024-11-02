@@ -312,9 +312,9 @@ app.post('/ipn_callback', accessToken, urlEncoded, function(req, res){
 
                         sendOrderEmail(template, user.email, (response, info)=>{
                             if(response){
-                                res.status(200).json(info)
+                                console.log(info)
                             }else{
-                                res.status(500).json(info)
+                                console.log(info)
                             }
                         })
                         
