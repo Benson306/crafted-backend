@@ -9,6 +9,21 @@ const unirest = require('unirest');
 const LocationsModel = require('../models/LocationsModel');
 const verifyToken = require('../middleware/authMiddleware');
 const UsersModel = require('../models/UsersModel');
+const SENDMAIL = require('../middleware/SendMail');
+
+
+function sendOrderEmail(template, recepient, callback)
+{
+    SENDMAIL("Your Order Has Been Confirmed", template, recepient)
+   .then(response => {
+        console.log("Email Sent");
+        callback(true, "Success");
+    })
+    .catch(error => {
+        console.error('Error sending email:', error);
+        callback(false, error)
+    }); 
+}
 
 function accessToken(req, res, next){
 
@@ -203,7 +218,109 @@ app.post('/ipn_callback', accessToken, urlEncoded, function(req, res){
                 UsersModel.findOne({ _id: mongoData.user_id})
                 .then(user => {
                     // Send Success email if paid
-                    res.json("Success");
+                    LocationsModel.findById(mongoData.deliveryLocation)
+                    .then(locationData => {
+                        let template = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="utf-8">
+                                <title>Order Confirmed</title>
+                                <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    color: #000;
+                                    background-color: #fff;
+                                }
+                                #heading {
+                                    text-align: center;
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    margin-bottom: 20px;
+                                }
+                                .table-container {
+                                    margin-top: 20px;
+                                }
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+                                th, td {
+                                    padding: 8px;
+                                    text-align: left;
+                                    border: 1px solid #000;
+                                }
+                                .info {
+                                    margin-top: 10px;
+                                    font-weight: bold;
+                                }
+                                th {
+                                    background-color: #000;
+                                    color: #fff;
+                                }
+                                .total-row {
+                                    font-weight: bold;
+                                }
+                                .footer {
+                                    text-align: center;
+                                    margin: auto;
+                                    margin-top: 10px;
+                                    width: 50%;
+                                }
+                                #footerText {
+                                    font-size: 20px;
+                                }
+                                </style>
+                            </head>
+                            <body>
+                                <div id="heading">Your Order Has Been Confirmed</div>
+                            
+                                <div class="info">Order Tracking Number: ${mongoData.OrderTrackingId}</div>
+                                <div class="info">Order Date: ${mongoData.order_date}</div>
+                                <div class="info">Full Name: ${user.first_name} ${user.second_name}</div>
+                                <div class="info">Delivery Location: ${locationData.town}</div>
+                            
+                                <div class="table-container">
+                                <div>Products</div>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    ${mongoData.items.map(item => 
+                                        `<tr>
+                                        <td>${item.productName}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>KSH. ${item.price}/=</td>
+                                        </tr>`
+                                    ).join('')}
+                                    </tbody>
+                                </table>
+                                </div>
+                                <div class="info">Delivery Cost: KSH. ${mongoData.delivery_cost}/=</div>
+                                <div class="info total-row">Total Amount: KSH. ${mongoData.amount_paid}/=</div>
+                                <div class="footer">Our Sales Agent Will Contact You To Make Arrangements for Delivery</div>
+                                <div class="footer" id="footerText">Thank You For Shopping With Us!</div>
+                                <div class="footer">Crafted Furniture Collection, 2024</div>
+                            </body>
+                            </html>
+                            `;
+
+                        sendOrderEmail(template, user.email, (response, info)=>{
+                            if(response){
+                                res.status(200).json(info)
+                            }else{
+                                res.status(500).json(info)
+                            }
+                        })
+                        
+                        res.json("Success");
+                    })
+                    
                 })
                 .catch(err => {
                     res.status(500).json("Server Error");
