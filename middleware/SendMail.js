@@ -25,11 +25,8 @@ const SendEmail = (subject, htmlTemplate, recepient) => {
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.log('Error occurred:', error);
-          reject('Error sending email');
         } else {
-            console.log(info)
           console.log('Email sent:', info.response);
-          resolve('Email sent successfully');
         }
       });
     });

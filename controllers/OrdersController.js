@@ -309,16 +309,16 @@ app.post('/ipn_callback', accessToken, urlEncoded, function(req, res){
                             </body>
                             </html>
                             `;
-
                         sendOrderEmail(template, user.email, (response, info)=>{
                             if(response){
                                 console.log(info)
+                                res.json("Success");
                             }else{
                                 console.log(info)
+                                res.json("Success");
                             }
                         })
                         
-                        res.json("Success");
                     })
                     
                 })
