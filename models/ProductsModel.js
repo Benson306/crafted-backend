@@ -5,7 +5,7 @@ let productsSchema = new mongoose.Schema({
     productName: String,
     description: String,
     ownedBy: String,
-    type: String,
+    type: [String],
     beforePrice: String,
     price: Number,
     size: String,
