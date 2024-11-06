@@ -454,7 +454,7 @@ app.put('/edit_product/:id', upload.array('images'), verifyToken, async (req, re
   const id = req.params.id;
   const productName = req.body.productName;
   const description = req.body.description;
-  const type = req.body.type.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
+  const type = req.body.type //.charAt(0).toUpperCase() + req.body.type.slice(1).toLowerCase();
   let beforePrice = req.body.beforePrice;
   const price = req.body.price;
   const size = req.body.size;
